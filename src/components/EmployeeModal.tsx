@@ -29,9 +29,9 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
     const [token, setToken] = useState('');
 
     const disableBtn =
-        employeeToChange.name.trim() != "" ||
-        employeeToChange.jobTitle.trim() != "" &&
-        employeeToChange.hireDate != "";
+        employeeToChange.name.trim() == "" ||
+        employeeToChange.jobTitle.trim() == "" ||
+        employeeToChange.hireDate == "";
 
     // Modal Functions
     const onOpenModal = () => {
@@ -126,7 +126,7 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
 
 
     return (
-        <Dialog >
+        <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogTrigger asChild>
                 {/* <Button variant="outline">Edit Profile</Button> */}
                 <Button
@@ -157,7 +157,7 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
                                 onChange={handleEmployeeToChange}
                             />
                         </div>
-                        <div>
+                        <div className={`${type === "Add" ? "" : "hidden"}`}>
                             <div className="mb-2 block">
                                 <Label htmlFor="jobTitle">Job title</Label>
                             </div>
