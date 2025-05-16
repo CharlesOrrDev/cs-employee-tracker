@@ -4,7 +4,7 @@ import { Employee } from '@/lib/interfaces/interfaces'
 import { addEmployee, updateEmployee } from '@/lib/services/employee-service';
 import React, { useEffect, useState } from 'react'
 import { Button } from './ui/button';
-import { FaPlus } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaPlus } from 'react-icons/fa';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -15,7 +15,35 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 
 
 // Valid values for type: "Add" & "Edit"
-const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Edit', employee: Employee | null, refreshEmployees: () => Promise<void> }) => {
+const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Edit', employee: Employee | null, refreshEmployees: () => Promise<void> }) =>
+{
+    const [jobOpen, setJobOpen] = useState(false);
+    const [selectingJobOptions, setSelectingJobOptions] = useState(false);
+
+    const [hoveringCustomer, setHoveringCustomer] = useState(false);
+    const [hoveringIT, setHoveringIT] = useState(false);
+    const [hoveringSoftware, setHoveringSoftware] = useState(false);
+
+    const [jobSelect, setJobSelect] = useState("");
+
+    const handleJobOpen = () =>
+    {
+        if (jobOpen)
+        {
+            setJobOpen(false);
+        }else
+        {
+            setJobOpen(true);
+        }
+    }
+
+    useEffect(() =>
+    {
+        if (selectingJobOptions == false && jobOpen == true)
+        {
+            handleJobOpen();
+        }
+    },[selectingJobOptions])
 
     // useStates
     const [openModal, setOpenModal] = useState(false);
@@ -53,6 +81,7 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
             ...employeeToChange,
             [e.target.id]: e.target.value,
         });
+        console.log(employeeToChange);
     };
 
     const handleEmployeeToChangeHireDate = (date: string) => {
@@ -124,6 +153,18 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
         handleToken();
     }, []);
 
+    useEffect(() =>
+    {
+        if (jobOpen)
+        {
+            handleJobOpen();
+        }
+    },[jobSelect])
+
+    useEffect(() =>
+    {
+        employeeToChange.jobTitle = jobSelect;
+    },[jobSelect])
 
     return (
         <Dialog open={openModal} onOpenChange={setOpenModal}>
@@ -134,7 +175,7 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
                     className={type === "Add" ? "flex items-center gap-1" : ""}
                     onClick={onOpenModal}
                 >
-                    {type === "Add" ? <FaPlus className="mt-[0.2rem]" /> : "Edit"}
+                    {type === "Add" ? <FaPlus/> : <p className="w-[41px]">Edit</p>}
                 </Button>
             </DialogTrigger>
             <DialogContent className='w-[40rem]'>
@@ -157,15 +198,67 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
                                 onChange={handleEmployeeToChange}
                             />
                         </div>
-                        <div className={`${type === "Add" ? "" : "hidden"}`}>
+                        <div>
                             <div className="mb-2 block">
                                 <Label htmlFor="jobTitle">Job title</Label>
                             </div>
                             <Input
                                 id="jobTitle"
+                                className="hidden"
                                 value={employeeToChange.jobTitle}
                                 onChange={handleEmployeeToChange}
                             />
+                            <div>
+                                <div>
+                                              
+                                    <Button
+                                        variant="outline"
+                                        className="text-sm text-gray-600 w-[14.075rem] flex justify-between"
+                                        onClick={handleJobOpen}
+                                        onMouseEnter={() => setSelectingJobOptions(true)}
+                                        onMouseLeave={() => setSelectingJobOptions(false)}
+                                    >
+                                        <p className="ml-[0.5rem]">{employeeToChange.jobTitle}</p>
+                                        <FaCaretUp className={`mr-[0.1rem] ${jobOpen ? "hidden" : ""}`} />
+                                        <FaCaretDown className={`mr-[0.1rem] ${jobOpen ? "" : "hidden"}`} />
+                                    </Button>
+                            
+                                </div>
+                                <div
+                                    className={`z-50 border bg-white flex flex-col items-center w-[14.075rem] rounded-[5px] absolute text-center ${jobOpen ? "" : "hidden"}`}
+                                    onMouseEnter={() => setSelectingJobOptions(true)}
+                                    onMouseLeave={() => setSelectingJobOptions(false)}
+                                >
+                            
+                                    <button
+                                        className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringCustomer ? "bg-blue-100" : ""}`}
+                                        onClick={() => setJobSelect("Customer Support")}
+                                        onMouseEnter={() => setHoveringCustomer(true)}
+                                        onMouseLeave={() => setHoveringCustomer(false)}
+                                    >
+                                        Customer Support
+                                    </button>
+                            
+                                    <button
+                                        className={`cursor-pointer pt-[2.5px] pb-[2.5px] border-t border-b w-full ${hoveringIT ? "bg-blue-100" : ""}`}
+                                        onClick={() => setJobSelect("IT Support Specialist")}
+                                        onMouseEnter={() => setHoveringIT(true)}
+                                        onMouseLeave={() => setHoveringIT(false)}
+                                    >
+                                        IT Support Specialist
+                                    </button>
+                            
+                                    <div
+                                        className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringSoftware ? "bg-blue-100" : ""}`}
+                                        onClick={() => setJobSelect("Software Engineer")}
+                                        onMouseEnter={() => setHoveringSoftware(true)}
+                                        onMouseLeave={() => setHoveringSoftware(false)}
+                                    >
+                                        Software Engineer
+                                    </div>
+                            
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div>

@@ -8,6 +8,7 @@ import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { Button } from './ui/button';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from './ui/table';
 import EmployeeModal from './EmployeeModal';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from './ui/pagination';
 
 const EmployeeTable = () =>
 {
@@ -25,11 +26,17 @@ const EmployeeTable = () =>
   const [sortingAZ, setSortingAZ] = useState<boolean>();
   const [sortingZA, setSortingZA] = useState<boolean>();
 
+  const [hoveringAZ, setHoveringAZ] = useState(false);
+  const [hoveringZA, setHoveringZA] = useState(false);
+
   const [nameOpen, setNameOpen] = useState(false);
   const [selectingNameOptions, setSelectingNameOptions] = useState(false);
 
   const [sortingNewest, setSortingNewest] = useState<boolean>();
   const [sortingOldest, setSortingOldest] = useState<boolean>();
+
+  const [hoveringNewest, setHoveringNewest] = useState(false);
+  const [hoveringOldest, setHoveringOldest] = useState(false);
 
   const [hireOpen, setHireOpen] = useState(false);
   const [selectingHireOptions, setSelectingHireOptions] = useState(false);
@@ -38,8 +45,17 @@ const EmployeeTable = () =>
   const [sortingIT, setSortingIT] = useState<boolean>();
   const [sortingSoftware, setSortingSoftware] = useState<boolean>();
 
+  const [hoveringCustomer, setHoveringCustomer] = useState(false);
+  const [hoveringIT, setHoveringIT] = useState(false);
+  const [hoveringSoftware, setHoveringSoftware] = useState(false);
+
   const [jobOpen, setJobOpen] = useState(false);
   const [selectingJobOptions, setSelectingJobOptions] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [paginatedEmployees, setPaginatedEmployees] = useState<Employee[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
 
   const switchToAZ = () =>
   {
@@ -277,6 +293,28 @@ const EmployeeTable = () =>
 
   useEffect(() =>
   {
+    const calculatedTotalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
+    setTotalPages(calculatedTotalPages);
+
+    if (currentPage > calculatedTotalPages)
+    {
+      setCurrentPage(calculatedTotalPages || 1);
+    }
+
+    const indexOfLastEmployee = currentPage * itemsPerPage;
+    const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage;
+    const currentEmployees = sortedEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
+
+    setPaginatedEmployees(currentEmployees);
+  },[sortedEmployees, currentPage, itemsPerPage])
+
+  const handlePageChange = (page: number) =>
+  {
+    setCurrentPage(page);
+  }
+
+  useEffect(() =>
+  {
     if (selectingNameOptions == false && nameOpen == true)
     {
       handleNameOpen();
@@ -298,6 +336,91 @@ const EmployeeTable = () =>
       handleJobOpen();
     }
   },[selectingJobOptions])
+
+  const renderPageNumbers = () =>
+  {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow)
+    {
+      for (let i = 1; i <= totalPages; i++)
+      {
+        pageNumbers.push(
+          <PaginationItem key={i}>
+            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+    }else
+    {
+      if (currentPage > 2)
+      {
+        pageNumbers.push(
+          <PaginationItem key={1}>
+            <PaginationLink href="#" onClick={() => handlePageChange(1)}>
+              1
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage > 3)
+      {
+        pageNumbers.push(
+          <PaginationItem key="ellipsis-start">
+            <PaginationEllipsis/>
+          </PaginationItem>
+        )
+      }
+
+      let start = Math.max(currentPage - 1, 1);
+      let end = Math.min(currentPage + 1, totalPages);
+
+      if (currentPage <= 2)
+      {
+        end = Math.min(3, totalPages);
+      }else if (currentPage >= totalPages - 1)
+      {
+        start = Math.max(totalPages - 2, 1);
+      }
+
+      for (let i = start; i <= end; i++)
+      {
+        pageNumbers.push(
+          <PaginationItem key={i}>
+            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage < totalPages - 2)
+      {
+        pageNumbers.push(
+          <PaginationItem key="ellipsis-end">
+            <PaginationEllipsis/>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage < totalPages - 1)
+      {
+        pageNumbers.push(
+          <PaginationItem key={totalPages}>
+            <PaginationLink href="#" onClick={() => handlePageChange(totalPages)}>
+              {totalPages}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+    }
+
+    return pageNumbers;
+  }
 
   return (
     <>
@@ -336,15 +459,19 @@ const EmployeeTable = () =>
                 >
 
                   <button
-                    className="cursor-pointer mt-[5px] mb-[2.5px]"
+                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringAZ ? "bg-blue-100" : ""}`}
                     onClick={switchToAZ}
+                    onMouseEnter={() => setHoveringAZ(true)}
+                    onMouseLeave={() => setHoveringAZ(false)}
                   >
                     A-Z
                   </button>
 
                   <button
-                  className="cursor-pointer mt-[2.5px] mb-[5px]"
+                  className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringZA ? "bg-blue-100" : ""}`}
                     onClick={switchToZA}
+                    onMouseEnter={() => setHoveringZA(true)}
+                    onMouseLeave={() => setHoveringZA(false)}
                   >
                     Z-A
                   </button>
@@ -377,15 +504,19 @@ const EmployeeTable = () =>
                 >
 
                   <button
-                    className="cursor-pointer mt-[5px] mb-[2.5px]"
+                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringNewest ? "bg-blue-100" : ""}`}
                     onClick={switchToNewest}
+                    onMouseEnter={() => setHoveringNewest(true)}
+                    onMouseLeave={() => setHoveringNewest(false)}
                   >
                     Newest First
                   </button>
 
                   <button
-                    className="cursor-pointer mt-[2.5px] mb-[5px]"
+                    className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringOldest ? "bg-blue-100" : ""}`}
                     onClick={switchToOldest}
+                    onMouseEnter={() => setHoveringOldest(true)}
+                    onMouseLeave={() => setHoveringOldest(false)}
                   >
                     Oldest First
                   </button>
@@ -412,28 +543,34 @@ const EmployeeTable = () =>
 
                 </div>
                 <div
-                  className={`z-50 border bg-white flex flex-col items-center w-[10rem] rounded-[5px] absolute ${jobOpen ? "" : "hidden"}`}
+                  className={`z-50 border bg-white flex flex-col items-center w-[10rem] rounded-[5px] absolute text-center ${jobOpen ? "" : "hidden"}`}
                   onMouseEnter={() => setSelectingJobOptions(true)}
                   onMouseLeave={() => setSelectingJobOptions(false)}
                 >
 
                   <button
-                    className="cursor-pointer mt-[5px] mb-[2.5px]"
+                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringCustomer ? "bg-blue-100" : ""}`}
                     onClick={switchToCustomer}
+                    onMouseEnter={() => setHoveringCustomer(true)}
+                    onMouseLeave={() => setHoveringCustomer(false)}
                   >
                     Customer Support
                   </button>
 
                   <button
-                    className="cursor-pointer mt-[2.5px] mb-[2.5px]"
+                    className={`cursor-pointer pt-[2.5px] pb-[2.5px] border-t border-b w-full ${hoveringIT ? "bg-blue-100" : ""}`}
                     onClick={switchToIT}
+                    onMouseEnter={() => setHoveringIT(true)}
+                    onMouseLeave={() => setHoveringIT(false)}
                   >
                     IT Support Specialist
                   </button>
 
                   <div
-                    className="cursor-pointer mt-[2.5px] mb-[5px]"
+                    className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringSoftware ? "bg-blue-100" : ""}`}
                     onClick={switchToSoftware}
+                    onMouseEnter={() => setHoveringSoftware(true)}
+                    onMouseLeave={() => setHoveringSoftware(false)}
                   >
                     Software Engineer
                   </div>
@@ -457,7 +594,7 @@ const EmployeeTable = () =>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedEmployees.length === 0 ? (
+          {paginatedEmployees.length === 0 ? (
             <TableRow>
               <TableCell></TableCell>
               <TableCell className="text-center">
@@ -466,8 +603,8 @@ const EmployeeTable = () =>
               <TableCell></TableCell>
             </TableRow>
           ) : (
-            sortedEmployees.map((employee, idx) => (
-              <TableRow key={idx}>
+            paginatedEmployees.map((employee, index) => (
+              <TableRow key={index}>
                 <TableCell className="font-medium">{employee.name}</TableCell>
                 <TableCell>{employee.jobTitle}</TableCell>
                 <TableCell>{employee.hireDate}</TableCell>
@@ -483,6 +620,28 @@ const EmployeeTable = () =>
         </TableBody>
       </Table>
       {/* Display table - End */}
+
+      {sortedEmployees.length > 0 && (
+       <div className="mt-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}/>
+            </PaginationItem>
+
+            {renderPageNumbers()}
+
+            <PaginationItem>
+              <PaginationNext href="#" onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}/>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+
+        <div className="mt-2 text-center text-sm text-gray-500">
+          Showing {paginatedEmployees.length} of {sortedEmployees.length} employees
+        </div>
+       </div> 
+      )}
     </>
   )
 }
