@@ -2,17 +2,19 @@
 
 import { Employee } from '@/lib/interfaces/interfaces';
 import { deleteEmployee, getEmployees } from '@/lib/services/employee-service';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { Button } from './ui/button';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from './ui/table';
 import EmployeeModal from './EmployeeModal';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from './ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const EmployeeTable = () =>
 {
   const { push } = useRouter();
+  const searchParams = useSearchParams();
 
   // useStates
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -306,11 +308,43 @@ const EmployeeTable = () =>
     const currentEmployees = sortedEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
 
     setPaginatedEmployees(currentEmployees);
+
+    updateURLParams();
   },[sortedEmployees, currentPage, itemsPerPage])
+
+  const updateURLParams = () =>
+  {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", currentPage.toString());
+    url.searchParams.set("items", itemsPerPage.toString());
+    window.history.replaceState({}, "", url.toString());
+  }
+
+  useEffect(() =>
+  {
+    const page = searchParams.get("page");
+    const items = searchParams.get("items");
+
+    if (page)
+    {
+      setCurrentPage(parseInt(page));
+    }
+
+    if (items)
+    {
+      setItemsPerPage(parseInt(items));
+    }
+  },[searchParams])
 
   const handlePageChange = (page: number) =>
   {
     setCurrentPage(page);
+  }
+
+  const handleItemsPerPageChange = (value: string) =>
+  {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
   }
 
   useEffect(() =>
@@ -623,19 +657,54 @@ const EmployeeTable = () =>
 
       {sortedEmployees.length > 0 && (
        <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}/>
-            </PaginationItem>
+        <div className="mb-4 grid">
 
-            {renderPageNumbers()}
+          <div className="mb-4 md:mb-0 flex items-center row-start-1 col-start-1 w-full">
+            <div className="flex items-center">
+              <span className="mr-2 text-sm text-gray-600">Items per page:</span>
+              <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="8"/>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="8">8</SelectItem>
+                  <SelectItem value="16">16</SelectItem>
+                  <SelectItem value="24">24</SelectItem>
+                  <SelectItem value="40">40</SelectItem>
+                  <SelectItem value="56">56</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <PaginationItem>
-              <PaginationNext href="#" onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}/>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+            <div className="w-[68%]">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" onClick={(event) =>
+                      {
+                        event.preventDefault();
+                        if (currentPage > 1) handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+
+                  {renderPageNumbers()}
+
+                  <PaginationItem>
+                    <PaginationNext href="#" onClick={(event) =>
+                      {
+                        event.preventDefault();
+                        if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          </div>
+        </div>
 
         <div className="mt-2 text-center text-sm text-gray-500">
           Showing {paginatedEmployees.length} of {sortedEmployees.length} employees

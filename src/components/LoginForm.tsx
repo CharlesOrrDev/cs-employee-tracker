@@ -110,6 +110,13 @@ const LoginForm = () => {
                     type="password"
                     required
                     onChange={changeUser}
+                    onKeyDown={(event) =>
+                    {
+                        if (event.key === "Enter")
+                        {
+                            handleLogin();
+                        }
+                    }}
                     className={loginError ? "border-red-500" : ""}
                 />
                 {
