@@ -7,7 +7,8 @@ import { Input } from './ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from './ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { cn } from '@/lib/utils'
-import { CalendarIcon, Calendar } from 'lucide-react'
+import { Calendar } from './ui/calendar'
+import { CalendarIcon } from 'lucide-react'
 
 const EmployeeEditView = ({ employee, setEdit }: { employee: Employee, setEdit: (value: boolean) => void }) => {
 

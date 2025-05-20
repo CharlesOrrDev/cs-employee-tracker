@@ -651,12 +651,12 @@ const EmployeeTable = () =>
                 <TableCell className="font-medium">{employee.name}</TableCell>
                 <TableCell>{employee.jobTitle}</TableCell>
                 <TableCell>{employee.hireDate}</TableCell>
-                <TableCell className="flex gap-3 justify-end">
-                  <Button onClick={() => handleViewEmployee(employee.id)}>
+                <TableCell className="flex justify-end">
+                  <Button className="w-[73px] rounded-r-none border border-gray-400" onClick={() => handleViewEmployee(employee.id)}>
                     View
                   </Button>
                   <EmployeeModal type="Edit" employee={employee} refreshEmployees={handleGetEmployees} />
-                  <Button variant="destructive" onClick={() => handleDeleteEmployee(employee.id)}>
+                  <Button className="rounded-l-none border border-gray-400" variant="destructive" onClick={() => handleDeleteEmployee(employee.id)}>
                     Delete
                   </Button>
                 </TableCell>
