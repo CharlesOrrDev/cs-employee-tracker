@@ -13,7 +13,7 @@ const AppContext = createContext<AppContext>({
     isLoggedIn: false,
     setIsLoggedIn: () => {},
     employeeId: 0,
-    setEmployeeId: (id: number) => {}
+    setEmployeeId: () => {}
 });
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {

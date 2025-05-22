@@ -176,7 +176,7 @@ const EmployeeModal = ({ type, employee, refreshEmployees }: { type: 'Add' | 'Ed
                 {/* <Button variant="outline">Edit Profile</Button> */}
                 <Button
                     color="success"
-                    className={type === "Add" ? "flex items-center gap-1" : "rounded-none border border-gray-400"}
+                    className={type === "Add" ? "flex items-center gap-1" : "rounded-none border border-gray-400 bg-blue-800 hover:bg-blue-800/70"}
                     onClick={onOpenModal}
                 >
                     {type === "Add" ? <FaPlus/> : <p className="w-[41px]">Edit</p>}

@@ -10,14 +10,13 @@ import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '.
 import EmployeeModal from './EmployeeModal';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from './ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useAppContext } from '@/lib/context/context';
 
 const EmployeeTable = () =>
 {
+  const router = useRouter();
+
   const { push } = useRouter();
   const searchParams = useSearchParams();
-
-  const { setEmployeeId } = useAppContext();
 
   // useStates
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -197,12 +196,6 @@ const EmployeeTable = () =>
     } catch (error) {
       console.log("error", error);
     }
-  };
-
-  const handleViewEmployee = async (id: number) => {
-    await setEmployeeId(id);
-
-    push('/employee-page');
   };
 
   // Getting the user token from storage
@@ -652,7 +645,7 @@ const EmployeeTable = () =>
                 <TableCell>{employee.jobTitle}</TableCell>
                 <TableCell>{employee.hireDate}</TableCell>
                 <TableCell className="flex justify-end">
-                  <Button className="w-[73px] rounded-r-none border border-gray-400" onClick={() => handleViewEmployee(employee.id)}>
+                  <Button className="w-[73px] rounded-r-none border border-gray-400 bg-green-700 hover:bg-green-700/70" onClick={() => router.push(`/employee-page/${employee.id}`)}>
                     View
                   </Button>
                   <EmployeeModal type="Edit" employee={employee} refreshEmployees={handleGetEmployees} />
