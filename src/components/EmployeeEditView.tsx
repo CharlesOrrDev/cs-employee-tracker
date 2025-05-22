@@ -15,18 +15,27 @@ import { updateEmployee } from '@/lib/services/employee-service'
 
 const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { employee: Employee, edit: boolean, setEdit: (value: boolean) => void, refreshEmployees: () => Promise<void> }) =>
 {
-  const [hoveringCustomer, setHoveringCustomer] = useState(false);
-  const [hoveringIT, setHoveringIT] = useState(false);
-  const [hoveringSoftware, setHoveringSoftware] = useState(false);
+  const [jobSelect, setJobSelect] = useState("");
 
   const [jobOpen, setJobOpen] = useState(false);
   const [selectingJobOptions, setSelectingJobOptions] = useState(false);
 
-  const [jobSelect, setJobSelect] = useState("");
+  const [hoveringCustomer, setHoveringCustomer] = useState(false);
+  const [hoveringIT, setHoveringIT] = useState(false);
+  const [hoveringSoftware, setHoveringSoftware] = useState(false);
+
+  const [statusSelect, setStatusSelect] = useState("");
+
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [selectingStatusOptions, setSelectingStatusOptions] = useState(false);
+
+  const [hoveringActive, setHoveringActive] = useState(false);
+  const [hoveringSick, setHoveringSick] = useState(false);
+  const [hoveringOutOfOffice, setHoveringOutOfOffice] = useState(false);
 
   const [token, setToken] = useState('');
 
-  let openModal = false;
+  let openModal: boolean;
   const [employeeToChange, setEmployeeToChange] = useState<Employee>({
     id: 0,
     name: "",
@@ -53,6 +62,17 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     }else
     {
       setJobOpen(true);
+    }
+  }
+
+  const handleStatusOpen = () =>
+  {
+    if (statusOpen)
+    {
+      setStatusOpen(false);
+    }else
+    {
+      setStatusOpen(true);
     }
   }
 
@@ -147,19 +167,32 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
       handleJobOpen();
     }
   },[selectingJobOptions])
-
-  useEffect(() =>
-  {
-    if (jobOpen)
-    {
-      handleJobOpen();
-    }
-  },[jobSelect])
   
   useEffect(() =>
   {
     employeeToChange.jobTitle = jobSelect;
   },[jobSelect])
+
+  useEffect(() =>
+  {
+    if (statusOpen)
+    {
+      handleStatusOpen();
+    }
+  },[statusSelect])
+
+  useEffect(() =>
+  {
+    if (selectingStatusOptions == false && statusOpen == true)
+    {
+      handleStatusOpen();
+    }
+  },[selectingStatusOptions])
+  
+  useEffect(() =>
+  {
+    employeeToChange.status = statusSelect;
+  },[statusSelect])
 
   useEffect(() =>
   {
@@ -246,20 +279,65 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
       </div>
 
       <div>
-        <p className="text-sm font-semibold">Status</p>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder={`${employee.status}`} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Status</SelectLabel>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Sick">Sick</SelectItem>
-              <SelectItem value="Out of Office">Out of Office</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div>
+          <p className="text-sm font-semibold">Status</p>
+        </div>
+        <Input
+          className="hidden"
+          value={employeeToChange.jobTitle}
+          onChange={handleEmployeeToChange}
+        />
+        <div>
+          <div>
+                                              
+            <Button
+              variant="outline"
+              className="text-sm text-gray-600 w-[14.075rem] flex justify-between"
+              onClick={handleStatusOpen}
+              onMouseEnter={() => setSelectingStatusOptions(true)}
+              onMouseLeave={() => setSelectingStatusOptions(false)}
+            >
+              <p className="ml-[0.5rem]">{employeeToChange.status}</p>
+              <FaCaretUp className={`mr-[0.1rem] ${statusOpen ? "hidden" : ""}`} />
+              <FaCaretDown className={`mr-[0.1rem] ${statusOpen ? "" : "hidden"}`} />
+            </Button>
+                            
+          </div>
+          <div
+            className={`z-50 border bg-white flex flex-col items-center w-[14.075rem] rounded-[5px] absolute text-center ${statusOpen ? "" : "hidden"}`}
+            onMouseEnter={() => setSelectingStatusOptions(true)}
+            onMouseLeave={() => setSelectingStatusOptions(false)}
+          >
+                            
+          <button
+            className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringActive ? "bg-blue-100" : ""}`}
+            onClick={() => setStatusSelect("Active")}
+            onMouseEnter={() => setHoveringActive(true)}
+            onMouseLeave={() => setHoveringActive(false)}
+          >
+            Active
+          </button>
+                            
+          <button
+            className={`cursor-pointer pt-[2.5px] pb-[2.5px] border-t border-b w-full ${hoveringSick ? "bg-blue-100" : ""}`}
+            onClick={() => setStatusSelect("Sick")}
+            onMouseEnter={() => setHoveringSick(true)}
+            onMouseLeave={() => setHoveringSick(false)}
+          >
+            Sick
+          </button>
+                            
+          <div
+            className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringOutOfOffice ? "bg-blue-100" : ""}`}
+            onClick={() => setStatusSelect("Out of Office")}
+            onMouseEnter={() => setHoveringOutOfOffice(true)}
+            onMouseLeave={() => setHoveringOutOfOffice(false)}
+          >
+            Out of Office
+          </div>
+                            
+          </div>
+        </div>
       </div>
 
       <div>
