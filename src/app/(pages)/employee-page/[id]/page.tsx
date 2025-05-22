@@ -8,7 +8,7 @@ import { getEmployeeById, getEmployees } from '@/lib/services/employee-service';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react'
 
-const page = () =>
+const ViewEmployee = () =>
 {
   const { push } = useRouter();
 
@@ -20,7 +20,7 @@ const page = () =>
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  // const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() =>
   {
@@ -64,7 +64,7 @@ const page = () =>
         push("/login");
       }
 
-      setEmployees(result as Employee[]);
+      // setEmployees(result as Employee[]);
     } catch (error) {
       console.log("error", error);
     }
@@ -94,4 +94,4 @@ const page = () =>
   )
 }
 
-export default page
+export default ViewEmployee

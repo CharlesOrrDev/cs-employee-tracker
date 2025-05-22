@@ -3,7 +3,7 @@
 import { Employee } from '@/lib/interfaces/interfaces';
 import { deleteEmployee, getEmployees } from '@/lib/services/employee-service';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, Suspense } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { Button } from './ui/button';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from './ui/table';
@@ -11,8 +11,7 @@ import EmployeeModal from './EmployeeModal';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from './ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-const EmployeeTable = () =>
-{
+const EmployeeTableContent = () => {
   const router = useRouter();
 
   const { push } = useRouter();
@@ -61,94 +60,77 @@ const EmployeeTable = () =>
   const [paginatedEmployees, setPaginatedEmployees] = useState<Employee[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
-  const switchToAZ = () =>
-  {
+  const switchToAZ = () => {
     handleNameOpen();
     setSortingZA(false);
     setSortingAZ(true);
   }
 
-  const switchToZA = () =>
-  {
+  const switchToZA = () => {
     handleNameOpen();
     setSortingAZ(false);
     setSortingZA(true);
   }
 
-  const switchToNewest = () =>
-  {
+  const switchToNewest = () => {
     handleHireOpen();
     setSortingOldest(false);
     setSortingNewest(true);
   }
 
-  const switchToOldest = () =>
-  {
+  const switchToOldest = () => {
     handleHireOpen();
     setSortingNewest(false);
     setSortingOldest(true);
   }
 
-  const switchToCustomer = () =>
-  {
+  const switchToCustomer = () => {
     handleJobOpen();
     setSortingSoftware(false);
     setSortingIT(false);
     setSortingCustomer(true);
   }
 
-  const switchToIT = () =>
-  {
+  const switchToIT = () => {
     handleJobOpen();
     setSortingSoftware(false);
     setSortingCustomer(false);
     setSortingIT(true);
   }
 
-  const switchToSoftware = () =>
-  {
+  const switchToSoftware = () => {
     handleJobOpen();
     setSortingIT(false);
     setSortingCustomer(false);
     setSortingSoftware(true);
   }
 
-  const handleNameOpen = () =>
-  {
-    if (nameOpen)
-    {
+  const handleNameOpen = () => {
+    if (nameOpen) {
       setNameOpen(false);
-    }else
-    {
+    } else {
       setNameOpen(true);
     }
   }
 
-  const handleHireOpen = () =>
-  {
-    if (hireOpen)
-    {
+  const handleHireOpen = () => {
+    if (hireOpen) {
       setHireOpen(false);
-    }else
-    {
+    } else {
       setHireOpen(true);
     }
   }
 
-  const handleJobOpen = () =>
-  {
-    if (jobOpen)
-    {
+  const handleJobOpen = () => {
+    if (jobOpen) {
       setJobOpen(false);
-    }else
-    {
+    } else {
       setJobOpen(true);
     }
   }
 
   // Function to get employees
-  const handleGetEmployees = useCallback(async () =>
-  {
+  const handleGetEmployees = useCallback(async () => {
     try {
       const result: Employee[] | "Not Authorized" = await getEmployees(token);
       // const result: Employee[] | "Not Authorized" = [];
@@ -164,8 +146,7 @@ const EmployeeTable = () =>
   }, [token, push]);
 
   // Updating sort functions
-  const changeSortBy = (value: string) =>
-  {
+  const changeSortBy = (value: string) => {
     if (value == "name" && sortBy == "name") {
       setSortBy(`${value}-reverse`);
     } else if (value == "hire-date" && sortBy == "hire-date") {
@@ -179,16 +160,14 @@ const EmployeeTable = () =>
     }
   };
 
-  const changeSortByJob = (value: string) =>
-  {
+  const changeSortByJob = (value: string) => {
     setSortBy("job-title");
 
     setSortByJob(value);
   };
 
   // Delete employee
-  const handleDeleteEmployee = async (id: number) =>
-  {
+  const handleDeleteEmployee = async (id: number) => {
     try {
       if (await deleteEmployee(token, id)) {
         await handleGetEmployees();
@@ -198,9 +177,89 @@ const EmployeeTable = () =>
     }
   };
 
+  const updateURLParams = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", currentPage.toString());
+    url.searchParams.set("items", itemsPerPage.toString());
+    window.history.replaceState({}, "", url.toString());
+  }
+  
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <PaginationItem key={i}>
+            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+    } else {
+      if (currentPage > 2) {
+        pageNumbers.push(
+          <PaginationItem key={1}>
+            <PaginationLink href="#" onClick={() => handlePageChange(1)}>
+              1
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage > 3) {
+        pageNumbers.push(
+          <PaginationItem key="ellipsis-start">
+            <PaginationEllipsis/>
+          </PaginationItem>
+        )
+      }
+
+      let start = Math.max(currentPage - 1, 1);
+      let end = Math.min(currentPage + 1, totalPages);
+
+      if (currentPage <= 2) {
+        end = Math.min(3, totalPages);
+      } else if (currentPage >= totalPages - 1) {
+        start = Math.max(totalPages - 2, 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(
+          <PaginationItem key={i}>
+            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage < totalPages - 2) {
+        pageNumbers.push(
+          <PaginationItem key="ellipsis-end">
+            <PaginationEllipsis/>
+          </PaginationItem>
+        )
+      }
+
+      if (currentPage < totalPages - 1) {
+        pageNumbers.push(
+          <PaginationItem key={totalPages}>
+            <PaginationLink href="#" onClick={() => handlePageChange(totalPages)}>
+              {totalPages}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      }
+    }
+
+    return pageNumbers;
+  }
+
   // Getting the user token from storage
-  useEffect(() =>
-  {
+  useEffect(() => {
     const handleToken = async () => {
       if (localStorage.getItem('user')) {
         setToken(await JSON.parse(localStorage.getItem('user')!).token);
@@ -214,56 +273,43 @@ const EmployeeTable = () =>
   }, []);
 
   // Fetching employees after token is set
-  useEffect(() =>
-  {
+  useEffect(() => {
     if (token !== '') {
       handleGetEmployees();
     }
   }, [token, handleGetEmployees])
 
-  useEffect(() =>
-  {
-    if (sortingAZ == true)
-    {
+  useEffect(() => {
+    if (sortingAZ == true) {
       changeSortBy("name");
-    }else if (sortingZA == true)
-    {
+    } else if (sortingZA == true) {
       changeSortBy("name-reverse");
     }
-  },[sortingAZ, sortingZA])
+  }, [sortingAZ, sortingZA])
 
-  useEffect(() =>
-  {
-    if (sortingNewest == true)
-    {
+  useEffect(() => {
+    if (sortingNewest == true) {
       changeSortBy("hire-date");
-    }else if (sortingOldest == true)
-    {
+    } else if (sortingOldest == true) {
       changeSortBy("hire-date-reverse");
     }
-  },[sortingSoftware, sortingOldest])
+  }, [sortingNewest, sortingOldest])
 
-  useEffect(() =>
-  {
-    if (sortingCustomer == true)
-    {
+  useEffect(() => {
+    if (sortingCustomer == true) {
       changeSortByJob("Customer Support");
-    }else if (sortingIT == true)
-    {
+    } else if (sortingIT == true) {
       changeSortByJob("IT Support Specialist");
-    }else if (sortingSoftware == true)
-    {
+    } else if (sortingSoftware == true) {
       changeSortByJob("Software Engineer");
     }
-  },[sortingCustomer, sortingIT, sortingSoftware])
+  }, [sortingCustomer, sortingIT, sortingSoftware])
 
   // Sorting the employees
-  useEffect(() =>
-  {
+  useEffect(() => {
     let sortingEmployees = [...employees];
-
-    const handleSorting = () =>
-    {
+    
+    const handleSorting = () => {
       switch (sortBy) {
         case "name":
           sortingEmployees.sort((a: Employee, b: Employee) => a.name.localeCompare(b.name));
@@ -295,13 +341,11 @@ const EmployeeTable = () =>
 
   }, [employees, sortBy, sortByJob]);
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     const calculatedTotalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
     setTotalPages(calculatedTotalPages);
 
-    if (currentPage > calculatedTotalPages)
-    {
+    if (currentPage > calculatedTotalPages) {
       setCurrentPage(calculatedTotalPages || 1);
     }
 
@@ -312,151 +356,47 @@ const EmployeeTable = () =>
     setPaginatedEmployees(currentEmployees);
 
     updateURLParams();
-  },[sortedEmployees, currentPage, itemsPerPage])
+  }, [sortedEmployees, currentPage, itemsPerPage])
 
-  const updateURLParams = () =>
-  {
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", currentPage.toString());
-    url.searchParams.set("items", itemsPerPage.toString());
-    window.history.replaceState({}, "", url.toString());
-  }
-
-  useEffect(() =>
-  {
+  useEffect(() => {
     const page = searchParams.get("page");
     const items = searchParams.get("items");
 
-    if (page)
-    {
+    if (page) {
       setCurrentPage(parseInt(page));
     }
 
-    if (items)
-    {
+    if (items) {
       setItemsPerPage(parseInt(items));
     }
-  },[searchParams])
+  }, [searchParams])
 
-  const handlePageChange = (page: number) =>
-  {
+  const handlePageChange = (page: number) => {
     setCurrentPage(page);
   }
 
-  const handleItemsPerPageChange = (value: string) =>
-  {
+  const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(parseInt(value));
     setCurrentPage(1);
   }
 
-  useEffect(() =>
-  {
-    if (selectingNameOptions == false && nameOpen == true)
-    {
+  useEffect(() => {
+    if (selectingNameOptions == false && nameOpen == true) {
       handleNameOpen();
     }
-  },[selectingNameOptions])
+  }, [selectingNameOptions])
 
-  useEffect(() =>
-  {
-    if (selectingHireOptions == false && hireOpen == true)
-    {
+  useEffect(() => {
+    if (selectingHireOptions == false && hireOpen == true) {
       handleHireOpen();
     }
-  },[selectingHireOptions])
+  }, [selectingHireOptions])
 
-  useEffect(() =>
-  {
-    if (selectingJobOptions == false && jobOpen == true)
-    {
+  useEffect(() => {
+    if (selectingJobOptions == false && jobOpen == true) {
       handleJobOpen();
     }
-  },[selectingJobOptions])
-
-  const renderPageNumbers = () =>
-  {
-    const pageNumbers = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow)
-    {
-      for (let i = 1; i <= totalPages; i++)
-      {
-        pageNumbers.push(
-          <PaginationItem key={i}>
-            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        )
-      }
-    }else
-    {
-      if (currentPage > 2)
-      {
-        pageNumbers.push(
-          <PaginationItem key={1}>
-            <PaginationLink href="#" onClick={() => handlePageChange(1)}>
-              1
-            </PaginationLink>
-          </PaginationItem>
-        )
-      }
-
-      if (currentPage > 3)
-      {
-        pageNumbers.push(
-          <PaginationItem key="ellipsis-start">
-            <PaginationEllipsis/>
-          </PaginationItem>
-        )
-      }
-
-      let start = Math.max(currentPage - 1, 1);
-      let end = Math.min(currentPage + 1, totalPages);
-
-      if (currentPage <= 2)
-      {
-        end = Math.min(3, totalPages);
-      }else if (currentPage >= totalPages - 1)
-      {
-        start = Math.max(totalPages - 2, 1);
-      }
-
-      for (let i = start; i <= end; i++)
-      {
-        pageNumbers.push(
-          <PaginationItem key={i}>
-            <PaginationLink href="#" onClick={() => handlePageChange(i)} isActive={i === currentPage}>
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        )
-      }
-
-      if (currentPage < totalPages - 2)
-      {
-        pageNumbers.push(
-          <PaginationItem key="ellipsis-end">
-            <PaginationEllipsis/>
-          </PaginationItem>
-        )
-      }
-
-      if (currentPage < totalPages - 1)
-      {
-        pageNumbers.push(
-          <PaginationItem key={totalPages}>
-            <PaginationLink href="#" onClick={() => handlePageChange(totalPages)}>
-              {totalPages}
-            </PaginationLink>
-          </PaginationItem>
-        )
-      }
-    }
-
-    return pageNumbers;
-  }
+  }, [selectingJobOptions])
 
   return (
     <>
@@ -717,6 +657,20 @@ const EmployeeTable = () =>
        </div> 
       )}
     </>
+  )
+}
+
+const EmployeeTableLoading = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="text-gray-500">Loading employees...</div>
+  </div>
+);
+
+const EmployeeTable = () => {
+  return (
+    <Suspense fallback={<EmployeeTableLoading />}>
+      <EmployeeTableContent />
+    </Suspense>
   )
 }
 

@@ -1,10 +1,9 @@
 'use client'
 
 import { Employee } from '@/lib/interfaces/interfaces'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from './ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { cn } from '@/lib/utils'
 import { Calendar } from './ui/calendar'
@@ -35,7 +34,6 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
 
   const [token, setToken] = useState('');
 
-  let openModal: boolean;
   const [employeeToChange, setEmployeeToChange] = useState<Employee>({
     id: 0,
     name: "",
@@ -54,40 +52,25 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     console.log(employeeToChange);
   };
 
-  const handleJobOpen = () =>
+  const handleJobOpen = useCallback(() =>
   {
-    if (jobOpen)
-    {
-      setJobOpen(false);
-    }else
-    {
-      setJobOpen(true);
-    }
-  }
+    setJobOpen(prev => !prev);
+  }, []);
 
-  const handleStatusOpen = () =>
+  const handleStatusOpen = useCallback(() =>
   {
-    if (statusOpen)
-    {
-      setStatusOpen(false);
-    }else
-    {
-      setStatusOpen(true);
-    }
-  }
+    setStatusOpen(prev => !prev);
+  }, []);
 
-  const onOpenModal = () =>
+  const onOpenModal = useCallback(() =>
   {
     setEmployeeToChange(employee as Employee);
+  }, [employee]);
   
-    openModal = true;
-  };
-  
-  const onCloseModal = () =>
+  const onCloseModal = useCallback(() =>
   {
-    openModal = false;
     setEmployeeToChange({ id: 0, name: "", jobTitle: "", hireDate: "", details: "", status: "" });
-  };
+  }, []);
 
   const formatDateForInput = (date: string) => {
     if (!date) return undefined;
