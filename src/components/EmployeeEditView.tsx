@@ -52,6 +52,14 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     console.log(employeeToChange);
   };
 
+  const handleEmployeeToChangeHireDate = (date: string) =>
+  {
+    setEmployeeToChange({
+      ...employeeToChange,
+      hireDate: date,
+    });
+  };
+
   const handleJobOpen = useCallback(() =>
   {
     setJobOpen(prev => !prev);
@@ -72,14 +80,16 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     setEmployeeToChange({ id: 0, name: "", jobTitle: "", hireDate: "", details: "", status: "" });
   }, []);
 
-  const formatDateForInput = (date: string) => {
+  const formatDateForInput = (date: string) =>
+  {
     if (!date) return undefined;
 
     const [year, month, day] = date.toString().split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
-  const formatDateFromInput = (date: Date | undefined) => {
+  const formatDateFromInput = (date: Date | undefined) =>
+  {
     if (!date) return "";
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -88,7 +98,8 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     return `${year}-${month}-${day}`;
   };
 
-  const handleEmployee = async () => {
+  const handleEmployee = async () =>
+  {
     try {
       const employeeWithChanges = {
         ...employeeToChange,
@@ -115,13 +126,6 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
     }
 
     onCloseModal();
-  };
-
-  const handleEmployeeToChangeHireDate = (date: string) => {
-    setEmployeeToChange({
-      ...employeeToChange,
-      hireDate: date,
-    });
   };
 
   useEffect(() =>
@@ -258,7 +262,7 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
 
       <div>
         <p className="text-sm font-semibold">Details</p>
-        <Input onChange={handleEmployeeToChange} value={employee.details || ""} />
+        <Input onChange={handleEmployeeToChange} value={employeeToChange.details || ""} />
       </div>
 
       <div>
@@ -267,7 +271,7 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
         </div>
         <Input
           className="hidden"
-          value={employeeToChange.jobTitle}
+          value={employeeToChange.status || ""}
           onChange={handleEmployeeToChange}
         />
         <div>
@@ -329,7 +333,10 @@ const EmployeeEditView = ({ employee, edit, setEdit, refreshEmployees }: { emplo
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
-              className={cn("w-full justify-start text-left font-normal text-muted-foreground")}
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !employeeToChange.hireDate && "text-muted-foreground"
+              )}
             >
               <CalendarIcon />
               {employeeToChange.hireDate ? employeeToChange.hireDate : <span>Pick a date</span>}

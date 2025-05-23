@@ -4,12 +4,12 @@ import { Employee } from '@/lib/interfaces/interfaces';
 import { deleteEmployee, getEmployees } from '@/lib/services/employee-service';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState, Suspense } from 'react'
-import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { Button } from './ui/button';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from './ui/table';
 import EmployeeModal from './EmployeeModal';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from './ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import DropdownButton from './ui/DropdownButton';
 
 const EmployeeTableContent = () => {
   const router = useRouter();
@@ -26,111 +26,14 @@ const EmployeeTableContent = () => {
   const [sortBy, setSortBy] = useState("");
   const [sortByJob, setSortByJob] = useState("");
 
-  const [sortingAZ, setSortingAZ] = useState<boolean>();
-  const [sortingZA, setSortingZA] = useState<boolean>();
-
-  const [hoveringAZ, setHoveringAZ] = useState(false);
-  const [hoveringZA, setHoveringZA] = useState(false);
-
-  const [nameOpen, setNameOpen] = useState(false);
-  const [selectingNameOptions, setSelectingNameOptions] = useState(false);
-
-  const [sortingNewest, setSortingNewest] = useState<boolean>();
-  const [sortingOldest, setSortingOldest] = useState<boolean>();
-
-  const [hoveringNewest, setHoveringNewest] = useState(false);
-  const [hoveringOldest, setHoveringOldest] = useState(false);
-
-  const [hireOpen, setHireOpen] = useState(false);
-  const [selectingHireOptions, setSelectingHireOptions] = useState(false);
-
-  const [sortingCustomer, setSortingCustomer] = useState<boolean>();
-  const [sortingIT, setSortingIT] = useState<boolean>();
-  const [sortingSoftware, setSortingSoftware] = useState<boolean>();
-
-  const [hoveringCustomer, setHoveringCustomer] = useState(false);
-  const [hoveringIT, setHoveringIT] = useState(false);
-  const [hoveringSoftware, setHoveringSoftware] = useState(false);
-
-  const [jobOpen, setJobOpen] = useState(false);
-  const [selectingJobOptions, setSelectingJobOptions] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [paginatedEmployees, setPaginatedEmployees] = useState<Employee[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
-  const switchToAZ = () => {
-    handleNameOpen();
-    setSortingZA(false);
-    setSortingAZ(true);
-  }
-
-  const switchToZA = () => {
-    handleNameOpen();
-    setSortingAZ(false);
-    setSortingZA(true);
-  }
-
-  const switchToNewest = () => {
-    handleHireOpen();
-    setSortingOldest(false);
-    setSortingNewest(true);
-  }
-
-  const switchToOldest = () => {
-    handleHireOpen();
-    setSortingNewest(false);
-    setSortingOldest(true);
-  }
-
-  const switchToCustomer = () => {
-    handleJobOpen();
-    setSortingSoftware(false);
-    setSortingIT(false);
-    setSortingCustomer(true);
-  }
-
-  const switchToIT = () => {
-    handleJobOpen();
-    setSortingSoftware(false);
-    setSortingCustomer(false);
-    setSortingIT(true);
-  }
-
-  const switchToSoftware = () => {
-    handleJobOpen();
-    setSortingIT(false);
-    setSortingCustomer(false);
-    setSortingSoftware(true);
-  }
-
-  const handleNameOpen = () => {
-    if (nameOpen) {
-      setNameOpen(false);
-    } else {
-      setNameOpen(true);
-    }
-  }
-
-  const handleHireOpen = () => {
-    if (hireOpen) {
-      setHireOpen(false);
-    } else {
-      setHireOpen(true);
-    }
-  }
-
-  const handleJobOpen = () => {
-    if (jobOpen) {
-      setJobOpen(false);
-    } else {
-      setJobOpen(true);
-    }
-  }
-
   // Function to get employees
-  const handleGetEmployees = useCallback(async () => {
+  const handleGetEmployees = useCallback(async () =>
+  {
     try {
       const result: Employee[] | "Not Authorized" = await getEmployees(token);
       // const result: Employee[] | "Not Authorized" = [];
@@ -146,7 +49,8 @@ const EmployeeTableContent = () => {
   }, [token, push]);
 
   // Updating sort functions
-  const changeSortBy = (value: string) => {
+  const changeSortBy = (value: string) =>
+  {
     if (value == "name" && sortBy == "name") {
       setSortBy(`${value}-reverse`);
     } else if (value == "hire-date" && sortBy == "hire-date") {
@@ -160,14 +64,16 @@ const EmployeeTableContent = () => {
     }
   };
 
-  const changeSortByJob = (value: string) => {
+  const changeSortByJob = (value: string) =>
+  {
     setSortBy("job-title");
 
     setSortByJob(value);
   };
 
   // Delete employee
-  const handleDeleteEmployee = async (id: number) => {
+  const handleDeleteEmployee = async (id: number) =>
+  {
     try {
       if (await deleteEmployee(token, id)) {
         await handleGetEmployees();
@@ -177,14 +83,16 @@ const EmployeeTableContent = () => {
     }
   };
 
-  const updateURLParams = () => {
+  const updateURLParams = () =>
+  {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
     url.searchParams.set("items", itemsPerPage.toString());
     window.history.replaceState({}, "", url.toString());
   }
   
-  const renderPageNumbers = () => {
+  const renderPageNumbers = () =>
+  {
     const pageNumbers = [];
     const maxPagesToShow = 5;
 
@@ -259,7 +167,8 @@ const EmployeeTableContent = () => {
   }
 
   // Getting the user token from storage
-  useEffect(() => {
+  useEffect(() =>
+  {
     const handleToken = async () => {
       if (localStorage.getItem('user')) {
         setToken(await JSON.parse(localStorage.getItem('user')!).token);
@@ -273,40 +182,16 @@ const EmployeeTableContent = () => {
   }, []);
 
   // Fetching employees after token is set
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (token !== '') {
       handleGetEmployees();
     }
   }, [token, handleGetEmployees])
 
-  useEffect(() => {
-    if (sortingAZ == true) {
-      changeSortBy("name");
-    } else if (sortingZA == true) {
-      changeSortBy("name-reverse");
-    }
-  }, [sortingAZ, sortingZA])
-
-  useEffect(() => {
-    if (sortingNewest == true) {
-      changeSortBy("hire-date");
-    } else if (sortingOldest == true) {
-      changeSortBy("hire-date-reverse");
-    }
-  }, [sortingNewest, sortingOldest])
-
-  useEffect(() => {
-    if (sortingCustomer == true) {
-      changeSortByJob("Customer Support");
-    } else if (sortingIT == true) {
-      changeSortByJob("IT Support Specialist");
-    } else if (sortingSoftware == true) {
-      changeSortByJob("Software Engineer");
-    }
-  }, [sortingCustomer, sortingIT, sortingSoftware])
-
   // Sorting the employees
-  useEffect(() => {
+  useEffect(() =>
+  {
     let sortingEmployees = [...employees];
     
     const handleSorting = () => {
@@ -341,7 +226,8 @@ const EmployeeTableContent = () => {
 
   }, [employees, sortBy, sortByJob]);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const calculatedTotalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
     setTotalPages(calculatedTotalPages);
 
@@ -358,7 +244,8 @@ const EmployeeTableContent = () => {
     updateURLParams();
   }, [sortedEmployees, currentPage, itemsPerPage])
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const page = searchParams.get("page");
     const items = searchParams.get("items");
 
@@ -371,32 +258,16 @@ const EmployeeTableContent = () => {
     }
   }, [searchParams])
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number) =>
+  {
     setCurrentPage(page);
   }
 
-  const handleItemsPerPageChange = (value: string) => {
+  const handleItemsPerPageChange = (value: string) =>
+  {
     setItemsPerPage(parseInt(value));
     setCurrentPage(1);
   }
-
-  useEffect(() => {
-    if (selectingNameOptions == false && nameOpen == true) {
-      handleNameOpen();
-    }
-  }, [selectingNameOptions])
-
-  useEffect(() => {
-    if (selectingHireOptions == false && hireOpen == true) {
-      handleHireOpen();
-    }
-  }, [selectingHireOptions])
-
-  useEffect(() => {
-    if (selectingJobOptions == false && jobOpen == true) {
-      handleJobOpen();
-    }
-  }, [selectingJobOptions])
 
   return (
     <>
@@ -411,149 +282,11 @@ const EmployeeTableContent = () => {
           <div className="flex items-center">
             <p className="mr-2 text-sm text-gray-600">Sort by:</p>
             
-            <div className="mr-[0.5rem]">
-              <div>
-                <div>
+            <DropdownButton buttonType="Name" changeSortBy={changeSortBy} changeSortByJob={changeSortByJob} label="Name" optionOne="A-Z" optionTwo="Z-A" optionThree=""/>
+            
+            <DropdownButton buttonType="Date" changeSortBy={changeSortBy} changeSortByJob={changeSortByJob} label="Hire date" optionOne="Newest First" optionTwo="Oldest First" optionThree=""/>
 
-                  <Button
-                    variant="outline"
-                    className="text-sm text-gray-600 w-[10rem] flex justify-between"
-                    onClick={handleNameOpen}
-                    onMouseEnter={() => setSelectingNameOptions(true)}
-                    onMouseLeave={() => setSelectingNameOptions(false)}
-                  >
-                    <p className="ml-[0.5rem]">Name</p>
-                    <FaCaretUp className={`mr-[0.1rem] ${nameOpen ? "hidden" : ""}`} />
-                    <FaCaretDown className={`mr-[0.1rem] ${nameOpen ? "" : "hidden"}`} />
-                  </Button>
-
-                </div>
-                <div
-                  className={`z-50 border bg-white flex flex-col items-center w-[10rem] rounded-[5px] absolute ${nameOpen ? "" : "hidden"}`}
-                  onMouseEnter={() => setSelectingNameOptions(true)}
-                  onMouseLeave={() => setSelectingNameOptions(false)}
-                >
-
-                  <button
-                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringAZ ? "bg-blue-100" : ""}`}
-                    onClick={switchToAZ}
-                    onMouseEnter={() => setHoveringAZ(true)}
-                    onMouseLeave={() => setHoveringAZ(false)}
-                  >
-                    A-Z
-                  </button>
-
-                  <button
-                  className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringZA ? "bg-blue-100" : ""}`}
-                    onClick={switchToZA}
-                    onMouseEnter={() => setHoveringZA(true)}
-                    onMouseLeave={() => setHoveringZA(false)}
-                  >
-                    Z-A
-                  </button>
-
-                </div>
-              </div>
-            </div>
-
-            <div className="mr-[0.5rem]">
-              <div>
-                <div>
-                  
-                  <Button
-                    variant="outline"
-                    className="text-sm text-gray-600 w-[10rem] flex justify-between"
-                    onClick={handleHireOpen}
-                    onMouseEnter={() => setSelectingHireOptions(true)}
-                    onMouseLeave={() => setSelectingHireOptions(false)}
-                  >
-                    <p className="ml-[0.5rem]">Hire date</p>
-                    <FaCaretUp className={`mr-[0.1rem] ${hireOpen ? "hidden" : ""}`} />
-                    <FaCaretDown className={`mr-[0.1rem] ${hireOpen ? "" : "hidden"}`} />
-                  </Button>
-
-                </div>
-                <div
-                  className={`z-50 border bg-white flex flex-col items-center w-[10rem] rounded-[5px] absolute ${hireOpen ? "" : "hidden"}`}
-                  onMouseEnter={() => setSelectingHireOptions(true)}
-                  onMouseLeave={() => setSelectingHireOptions(false)}
-                >
-
-                  <button
-                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringNewest ? "bg-blue-100" : ""}`}
-                    onClick={switchToNewest}
-                    onMouseEnter={() => setHoveringNewest(true)}
-                    onMouseLeave={() => setHoveringNewest(false)}
-                  >
-                    Newest First
-                  </button>
-
-                  <button
-                    className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringOldest ? "bg-blue-100" : ""}`}
-                    onClick={switchToOldest}
-                    onMouseEnter={() => setHoveringOldest(true)}
-                    onMouseLeave={() => setHoveringOldest(false)}
-                  >
-                    Oldest First
-                  </button>
-
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div>
-                <div>
-                  
-                  <Button
-                    variant="outline"
-                    className="text-sm text-gray-600 w-[10rem] flex justify-between"
-                    onClick={handleJobOpen}
-                    onMouseEnter={() => setSelectingJobOptions(true)}
-                    onMouseLeave={() => setSelectingJobOptions(false)}
-                  >
-                    <p className="ml-[0.5rem]">Job Title</p>
-                    <FaCaretUp className={`mr-[0.1rem] ${jobOpen ? "hidden" : ""}`} />
-                    <FaCaretDown className={`mr-[0.1rem] ${jobOpen ? "" : "hidden"}`} />
-                  </Button>
-
-                </div>
-                <div
-                  className={`z-50 border bg-white flex flex-col items-center w-[10rem] rounded-[5px] absolute text-center ${jobOpen ? "" : "hidden"}`}
-                  onMouseEnter={() => setSelectingJobOptions(true)}
-                  onMouseLeave={() => setSelectingJobOptions(false)}
-                >
-
-                  <button
-                    className={`cursor-pointer pt-[5px] pb-[2.5px] border-b w-full rounded-t-[5px] ${hoveringCustomer ? "bg-blue-100" : ""}`}
-                    onClick={switchToCustomer}
-                    onMouseEnter={() => setHoveringCustomer(true)}
-                    onMouseLeave={() => setHoveringCustomer(false)}
-                  >
-                    Customer Support
-                  </button>
-
-                  <button
-                    className={`cursor-pointer pt-[2.5px] pb-[2.5px] border-t border-b w-full ${hoveringIT ? "bg-blue-100" : ""}`}
-                    onClick={switchToIT}
-                    onMouseEnter={() => setHoveringIT(true)}
-                    onMouseLeave={() => setHoveringIT(false)}
-                  >
-                    IT Support Specialist
-                  </button>
-
-                  <div
-                    className={`cursor-pointer pt-[2.5px] pb-[5px] border-t w-full rounded-b-[5px] ${hoveringSoftware ? "bg-blue-100" : ""}`}
-                    onClick={switchToSoftware}
-                    onMouseEnter={() => setHoveringSoftware(true)}
-                    onMouseLeave={() => setHoveringSoftware(false)}
-                  >
-                    Software Engineer
-                  </div>
-
-                </div>
-              </div>
-            </div>
+            <DropdownButton buttonType="Job" changeSortBy={changeSortBy} changeSortByJob={changeSortByJob} label="Job Title" optionOne="Customer Support" optionTwo="IT Support Specialist" optionThree="Software Engineer"/>
           </div>
         </div>
       </div>
